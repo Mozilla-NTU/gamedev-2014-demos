@@ -3,6 +3,7 @@
   // views
 
   function PieceView(gameView, opts){
+    this.gameView = gameView;
     this.opts = shallowMerge(opts, this.defaults);
     console.log("making place for ", this.opts.row, this.opts.col);
     this.init();
@@ -20,9 +21,16 @@
       this.el = this.opts.el;
       this.row = this.opts.row;
       this.col = this.opts.col;
+      this.el.onclick = this.onclick.bind(this);
       this.render();
     },
+    onclick: function(el){
+      console.log("clicked", arguments, this);
+      this.gameView.clickedColumn(this.col);
+    },
     render: function(){
+      // todo: move common css into css file
+      // only set style here for programatically controlled properties (left, top)
       this.el.style.position = "absolute";
       this.el.style.backgroundColor = this.opts.playerColors[this.player];
       this.el.style.height = "90px";
@@ -54,23 +62,32 @@
       this.game = new Game({});
       this.rows = this.game.opts.rows;
       this.cols = this.game.opts.cols;
+      this.pieceViews = [];
       for(var row = 0; row < this.game.opts.rows; row++){
         for (var col = 0; col < this.game.opts.cols; col++){
           var el = document.createElement("div");
           this.el.appendChild(el);
-          new PieceView(this, {
+          this.pieceViews.push(new PieceView(this, {
             row: row,
             col: col,
             el: el
-          });
+          }));
         }
       }
+      this.render();
+    },
+    clickedColumn: function(col){
+      this.game.addPieceToColumn(col);
+
       this.render();
     },
     render: function(){
       this.el.style.width = (this.opts.colWidth * this.cols) + "px";
       this.el.style.height = (this.opts.rowHeight * this.rows) + "px";
       this.el.style.backgroundColor = this.opts.backgroundColor;
+      for (var i = 0, piece; piece = this.pieceViews[i]; i++){
+        piece.render();
+      }
       console.log("rendered", this.el);
     }
   }
