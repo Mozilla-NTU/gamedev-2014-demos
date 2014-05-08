@@ -1,141 +1,119 @@
 (function(global){
+  var ROW_HEIGHT = 100;
+  var COL_WIDTH = 100;
 
-  // views
+  function Piece(opts){
+    this.game = opts.game;
+    this.el = opts.el;
+    this.el.classList.add("piece");
+    this.el.classList.add("empty");
+    this.row = opts.row;
+    this.col = opts.col;
 
-  function PieceView(gameView, opts){
-    this.gameView = gameView;
-    this.opts = shallowMerge(opts, this.defaults);
-    console.log("making place for ", this.opts.row, this.opts.col);
-    this.init();
+    console.log("making place for ", this.row, this.col);
+    this.player = 0;
+    this.el.onclick = this.onclick.bind(this);
+    this.render();
   }
-  PieceView.prototype = {
-    defaults: {
-      playerColors: {
-        2: "#C22",
-        1: "#2C2",
-        0: "#CCC"
-      }
-    },
-    init: function(){
-      this.player = 0;
-      this.el = this.opts.el;
-      this.row = this.opts.row;
-      this.col = this.opts.col;
-      this.el.onclick = this.onclick.bind(this);
-      this.render();
-    },
-    onclick: function(el){
-      console.log("clicked", arguments, this);
-      this.gameView.clickedColumn(this.col);
-    },
-    render: function(){
-      // todo: move common css into css file
-      // only set style here for programatically controlled properties (left, top)
-      this.el.style.position = "absolute";
-      this.el.style.backgroundColor = this.opts.playerColors[this.player];
-      this.el.style.height = "90px";
-      this.el.style.width = "90px";
-      this.el.style.left = (this.col * 100) + "px";
-      this.el.style.top = (this.row * 100) + "px";
-    },
-    setState: function(player){
-      // takes player 0, 1, or 2 to set proper color
-      this.state = player;
-      this.render();
+
+  Piece.prototype.playerClasses = {
+    2: "player2",
+    1: "player1",
+    0: "empty"
+  };
+
+  Piece.prototype.removeClasses = function(){
+    for (var key in this.playerClasses){
+      var clazz = this.playerClasses[key];
+      this.el.classList.remove(clazz);
     }
-  }
+  };
+
+  Piece.prototype.onclick = function(el){
+    console.log("clicked", arguments, this);
+    this.game.clickedColumn(this.col);
+  };
+
+  Piece.prototype.render = function(){
+    this.el.style.left = (5 + this.col * 100) + "px";
+    this.el.style.top = ((this.game.rows - 1) * ROW_HEIGHT + 5 - this.row * 100) + "px";
+  };
+
+  Piece.prototype.setState = function(player){
+    console.log("setting state", this.row, this.col, player);
+    // takes player 0, 1, or 2 to set proper color
+    this.removeClasses();
+    this.el.classList.add(this.playerClasses[player]);
+  };
 
 
-  function GameView(el, opts){
+  function Game(el, opts){
+
+    this.rows = opts.rows || this.defaults.rows;
+    this.cols = opts.cols || this.defaults.cols;
+
     this.el = el;
-    this.opts = shallowMerge(opts, this.defaults);
-    this.init();
-  }
+    this.el.classList.add("board");
+    this.el.style.height = ((ROW_HEIGHT * this.rows) + 10) + "px";
+    this.el.style.width = ((COL_WIDTH * this.cols) + 10) + "px";
+    this.pieces = [];
+    this.activePlayer = 1;
 
-  GameView.prototype = {
-    defaults: {
-      rowHeight: 100,
-      colWidth: 100,
-      backgroundColor: "#333"
-    },
-    init: function(){
-      this.game = new Game({});
-      this.rows = this.game.opts.rows;
-      this.cols = this.game.opts.cols;
-      this.pieceViews = [];
-      for(var row = 0; row < this.game.opts.rows; row++){
-        for (var col = 0; col < this.game.opts.cols; col++){
-          var el = document.createElement("div");
-          this.el.appendChild(el);
-          this.pieceViews.push(new PieceView(this, {
-            row: row,
-            col: col,
-            el: el
-          }));
-        }
+    this.data = [];
+    for(var row = 0; row < this.rows; row++){
+      this.data[row] = [];
+      for (var col = 0; col < this.cols; col++){
+        this.data[row][col] = 0;
       }
-      this.render();
-    },
-    clickedColumn: function(col){
-      this.game.addPieceToColumn(col);
-
-      this.render();
-    },
-    render: function(){
-      this.el.style.width = (this.opts.colWidth * this.cols) + "px";
-      this.el.style.height = (this.opts.rowHeight * this.rows) + "px";
-      this.el.style.backgroundColor = this.opts.backgroundColor;
-      for (var i = 0, piece; piece = this.pieceViews[i]; i++){
-        piece.render();
-      }
-      console.log("rendered", this.el);
     }
-  }
 
-  // models
 
-  function Game(opts){
-    this.opts = shallowMerge(opts, this.defaults);
-    this.init();
-  } 
-  Game.prototype = {
-    defaults:{
-      rows: 6,
-      cols: 7
-    },
-
-    init: function(){
-      console.log("starting game at", this.el);
-      this.data = [];
-      for(var row = 0; row < this.opts.rows; row++){
-        this.data[row] = [];
-        for (var col = 0; col < this.opts.cols; col++){
-          this.data[row][col] = 0;
-        }
+    for(var row = 0; row < this.rows; row++){
+      for (var col = 0; col < this.cols; col++){
+        var el = document.createElement("div");
+        this.el.appendChild(el);
+        
+        this.pieces.push(new Piece({
+          game: this,
+          row: row,
+          col: col,
+          el: el
+        }));
       }
-      console.log(this.data);
-    },
-
-    setPiece: function(row, col, player){
-      this.data[row][col] = player;
-    },
-
-    gameState: function(){
-
     }
+
   }
+
+  Game.prototype.defaults = {
+    rows: 6,
+    cols: 7
+  };
+
+  Game.prototype.clickedColumn = function (col){
+    for(var row = 0; row < this.rows; row++){
+      if (this.data[row][col] === 0) {
+        this.data[row][col] = this.activePlayer;
+        this.updatedPiece(row, col, this.activePlayer);
+
+        this.activePlayer = (this.activePlayer % 2) + 1;
+        console.log("activePlayer is now", this.activePlayer);
+        return true;
+      }
+    }
+    return false;
+  };
+
+  Game.prototype.updatedPiece = function(row, col, player) {
+    console.log("updating piece", row, col, player);
+    for (var i = 0, piece; piece = this.pieces[i]; i++){
+      if (piece.row === row && piece.col === col){
+        piece.setState(player);
+      }
+    }
+  };
+
 
   // external interface
-  global.GameView = GameView;
-
-  
-  // utility functions
-
-  function shallowMerge(obj, defaults){
-    var result = {};
-    for (var attributeName in defaults){ result[attributeName] = defaults[attributeName]; }
-    for (var attributeName in obj){ result[attributeName] = obj[attributeName]; }
-    return result;
-  }
+  global.Game = Game;
 
 })(window)

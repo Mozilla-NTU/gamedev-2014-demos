@@ -1,0 +1,26 @@
+
+.board {
+  position: relative;
+  background-color: #333;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.piece {
+  position: absolute;
+  height: 90px;
+  width: 90px;
+  margin: 5px;
+}
+
+.piece.empty {
+  background-color: #CCC;
+}
+
+.piece.player1 {
+  background-color: #C22;
+}
+
+.piece.player2 {
+  background-color: #2C2;
+}
