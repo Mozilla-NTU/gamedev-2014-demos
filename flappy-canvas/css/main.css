@@ -1,0 +1,30 @@
+body {
+  background: black;
+}
+
+#container {
+  width: 800px;
+  height: 480px;
+  position: relative;
+  margin: 20px auto;
+}
+
+canvas.screen {
+  position: absolute;
+  top:0;
+  left: 0;
+  background: transparent;
+  width: 800px;
+  height: 480px;
+}
+
+#fps {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(255, 0, 0, 0.3);
+  font-size: 48px;
+  color: white;
+  width: 30px;
+  height: 30px;
+}
