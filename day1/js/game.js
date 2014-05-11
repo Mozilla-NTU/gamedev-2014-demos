@@ -7,9 +7,9 @@
     this.el = opts.el;
     this.el.classList.add("piece");
     this.el.classList.add("empty");
+    
     this.row = opts.row;
     this.col = opts.col;
-
     console.log("making place for ", this.row, this.col);
     this.player = 0;
     this.el.onclick = this.onclick.bind(this);
@@ -47,10 +47,10 @@
   };
 
 
-  function Game(el, opts){
+  function Game(el){
 
-    this.rows = opts.rows || this.defaults.rows;
-    this.cols = opts.cols || this.defaults.cols;
+    this.rows = 6;
+    this.cols = 7;
 
     this.el = el;
     this.el.classList.add("board");
@@ -58,15 +58,6 @@
     this.el.style.width = ((COL_WIDTH * this.cols) + 10) + "px";
     this.pieces = [];
     this.activePlayer = 1;
-
-    this.data = [];
-    for(var row = 0; row < this.rows; row++){
-      this.data[row] = [];
-      for (var col = 0; col < this.cols; col++){
-        this.data[row][col] = 0;
-      }
-    }
-
 
     for(var row = 0; row < this.rows; row++){
       for (var col = 0; col < this.cols; col++){
@@ -82,18 +73,104 @@
       }
     }
 
+    this.setupBoard();
   }
 
-  Game.prototype.defaults = {
-    rows: 6,
-    cols: 7
+  Game.prototype.setupBoard = function(){
+    this.board = [];
+    for(var row = 0; row < this.rows; row++){
+      this.board[row] = [];
+      for (var col = 0; col < this.cols; col++){
+        this.board[row][col] = 0;
+      }
+    }
   };
 
-  Game.prototype.clickedColumn = function (col){
+  Game.prototype.checkWin = function(){
+    // check horizontal
+    console.log("checking win");
+    for (var i = 0; i < this.rows; i++){
+      var streak = [];
+      for (var j = 0; j < this.cols; j++){
+        var player = this.board[i][j];
+        var last = streak[streak.length - 1];
+
+        if(player !== 0 && (!last || player === last)){
+          streak.push(player);
+          if (streak.length == 4){
+            this.won(player);
+            return;
+          }
+        } else {
+          streak = [];
+        }
+      }
+    }
+    
+    // check vertical
+    for (var j = 0; j < this.cols; j++) {
+      for (var i = 0; i < this.rows; i++) {
+        var player = this.board[i][j];
+        var last = streak[streak.length - 1];
+        if(player !== 0 && (!last || player === last)){
+          streak.push(player);
+          if (streak.length === 4){
+            this.won(player);
+            return;
+          }
+        } else {
+          streak = [];
+        }
+      }
+    }
+
+    for(var i = 0; i < this.rows; i++){
+      this.checkDiagonal(i, 0);
+      this.checkDiagonal(i, this.rows - 1, true);
+    }
+
+    for(var j = 0; j < this.cols; j++){
+      this.checkDiagonal(0, j);
+      this.checkDiagonal(0, j, true);
+    }
+  }
+
+  Game.prototype.checkDiagonal = function (row, col, reverse){
+    reverse = reverse || false;
+    var player = this.board[row][col];
+    streak = [];
+    while (typeof player !== "undefined"){
+      var last = streak[streak.length - 1];
+      if (player !== 0 && (!last || player === last)){
+        streak.push(player);
+        if (streak.length === 4){
+          this.won(player);
+          return;
+        }
+      } else {
+        streak = [];
+      }
+      if (reverse){
+        row++;
+        col--;
+      } else {
+        row++;
+        col++;
+      }
+      player = this.board[row, col];
+    }
+  }
+
+  Game.prototype.won = function(player){
+    console.log("player", player, "won!");
+  }
+
+  Game.prototype.clickedColumn = function(col){
     for(var row = 0; row < this.rows; row++){
-      if (this.data[row][col] === 0) {
-        this.data[row][col] = this.activePlayer;
+      if (this.board[row][col] === 0) {
+        this.board[row][col] = this.activePlayer;
         this.updatedPiece(row, col, this.activePlayer);
+        this.checkWin();
 
         this.activePlayer = (this.activePlayer % 2) + 1;
         console.log("activePlayer is now", this.activePlayer);
@@ -111,7 +188,6 @@
       }
     }
   };
-
 
   // external interface
   global.Game = Game;
