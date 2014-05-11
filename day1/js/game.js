@@ -138,7 +138,7 @@
   Game.prototype.checkDiagonal = function (row, col, reverse){
     reverse = reverse || false;
     var player = this.board[row][col];
-    streak = [];
+    var streak = [];
     while (typeof player !== "undefined"){
       var last = streak[streak.length - 1];
       if (player !== 0 && (!last || player === last)){
@@ -157,7 +157,7 @@
         row++;
         col++;
       }
-      player = this.board[row, col];
+      player = this.board[row] && this.board[row][col];
     }
   }
 
