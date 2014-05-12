@@ -115,7 +115,35 @@ Renderer.prototype.draw = function (ctx) {
         }
       }
     }
+    if (this.debug) this._debugDraw(ctx);
   }
+};
+
+/**
+ * Draw the tile grid.
+ * @param {CanvasRenderingContext2D} ctx
+ */
+Renderer.prototype._debugDraw = function (ctx) {
+  var tiles = this._tilemap._tiles;
+  var tilesheet = this._tilemap._tilesheet;
+  var rows = tiles.length;
+  var cols = tiles[0].length;
+  var w = cols * tilesheet.tileWidth;
+  var h = rows * tilesheet.tileHeight;
+
+  ctx.save();
+  ctx.strokeStyle = '#666';
+  ctx.beginPath();
+  for (var row = 0; row < rows; row++) {
+    ctx.moveTo(0, row * tilesheet.tileHeight);
+    ctx.lineTo(w, row * tilesheet.tileHeight);
+  }
+  for (var col = 0; col < cols; col++) {
+    ctx.moveTo(col * tilesheet.tileWidth, 0);
+    ctx.lineTo(col * tilesheet.tileWidth, h);
+  }
+  ctx.stroke();
+  ctx.restore();
 };
 
 /**

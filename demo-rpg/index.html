@@ -2,7 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Adventure Game</title>
+    <title>RPG Adventure!</title>
+    <meta name="author" content="Billy Lamberta, www.lamberta.org">
+    <meta name="description" content="Basic RPG-style game developed for 2014 Singapore HTML5 Gamedev Workshop.">
     <style>
     body { background-color: #bbb; }
     #container {
@@ -41,10 +43,11 @@
     <script>
    "use strict";
     window.onload = function () {
-      var layer1 = document.getElementById('layer1'),
-          ctx1 = layer1.getContext('2d'),
-          layer2 = document.getElementById('layer2'),
-          ctx2 = layer2.getContext('2d');
+      //get canvas elements and their rendering contexts
+      var layer1 = document.getElementById('layer1'); //tile background
+      var layer2 = document.getElementById('layer2'); //tile foreground and sprites
+      var ctx1 = layer1.getContext('2d');
+      var ctx2 = layer2.getContext('2d');
           
       var sprite1 = new Sprite('./assets/character/darion.png', character_data.DEFAULT);
       sprite1.x = 100;
@@ -76,17 +79,20 @@
       (function drawFrame () {
         window.requestAnimationFrame(drawFrame, layer2);
         ctx2.clearRect(0, 0, layer2.width, layer2.height);
+        checkCollision(sprite1);
         renderer.draw(ctx2);
       }());
 
       
-      /*
-       * KEYBOARD EVENTS
+      /* When an arrow key is pressed:
+       * 1. play the sprite's animation sequence associated with that direction, and
+       * 2. apply directional velocity for movement.
+       * Sprite.play(row) animates the sequence of frames at the specified row in a spritesheet.
        */
       window.addEventListener('keydown', function (event) {
         switch (event.keyCode) {
         case 37: //left
-          sprite1.play(1); //column
+          sprite1.play(1); //spritesheet row
           sprite1.vx = -2;
           break;
         case 38: //up
@@ -104,11 +110,45 @@
         }
       }, false);
 
+      /* When the arrow key is released, stop animation and movement.
+       */
       window.addEventListener('keyup', function () {
         sprite1.stop();
         sprite1.vx = 0;
         sprite1.vy = 0;
       }, false);
+
+
+      /* Determine the directional movement of a sprite by examining its
+       * vx/vy properties. Use the midpoint of the bounding-box edges
+       * to test for collision with un-walkable tiles.
+       * If it collides, apply a small amount of reverse velocity to the
+       * sprite to bounce it off the wall.
+       */
+      function checkCollision (sprite) {
+        //bounds
+        var left = sprite.x;
+        var right = sprite.x + sprite.width;
+        var top = sprite.y;
+        var bot = sprite.y + sprite.height;
+        var centerX = sprite.x + sprite.width/2;
+        var centerY = sprite.y + sprite.height/2;
+
+        //if moving right, test mid-right
+        if (sprite.vx > 0 && !tilemap.isWalkableCoord(right, centerY)) {
+          sprite.vx = -1;
+        //if moving left, test mid-left
+        } else if (sprite.vx < 0 && !tilemap.isWalkableCoord(left, centerY)) {
+          sprite.vx = 1;
+        }
+        //if moving down, test mid-bottom
+        if (sprite.vy > 0 && !tilemap.isWalkableCoord(centerX, bot)) {
+          sprite.vy = -1;
+        //if moving up, test mid-top
+        } else if (sprite.vy < 0 && !tilemap.isWalkableCoord(centerX, top)) {
+          sprite.vy = 1;
+        }
+      }
     };
     </script>
   </body>

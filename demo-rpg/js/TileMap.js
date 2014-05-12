@@ -11,7 +11,7 @@ function TileNode (tiledata) {
  * @return {boolean}
  */
 TileNode.prototype.isWalkable = function () {
-  return this._data.walkable;
+  return this.data.walkable;
 };
 
 
@@ -72,31 +72,52 @@ TileMap.prototype.setTile = function (x, y, tiletype) {
 };
 
 /**
- * @param {number} x Column
- * @param {number} y Row
+ * @param {number} col
+ * @param {number} row
  * @return {TileNode}
  */
-TileMap.prototype.getTile = function (x, y) {
-  if (y < 0 || y >= this._tiles.length) {
-    throw new RangeError("y out of bounds: " + y);
+TileMap.prototype.getTile = function (col, row) {
+  if (row < 0 || row >= this._tiles.length) {
+    throw new RangeError("row out of bounds: " + row);
   }
-  if (x < 0 || x >= this._tiles[y].length) {
-    throw new RangeError("x out of bounds: " + x);
+  if (col < 0 || col >= this._tiles[row].length) {
+    throw new RangeError("column out of bounds: " + col);
   }
-  return this._tiles[y][x];
+  return this._tiles[row][col];
 };
 
 /**
  * Translate screen coordinate to col/row and return tile.
- * @param {number} coordX Position of x coordinate on screen.
- * @param {number} coordY Position of y coordinate on screen.
- * @return {TileNode}
+ * @param {number} x Position of x-coordinate.
+ * @param {number} y Position of y coordinate.
+ * @return {TileNode} Or null if coordinate point is out-of-bounds.
  */
-TileMap.prototype.getTileCoord = function (coordX, coordY) {
-  var x = Math.floor(coordX / this._tilesheet.tileWidth);
-  var y = Math.floor(coordY / this._tilesheet.tileHeight);
-  return this.getTile(x, y);
+TileMap.prototype.getTileFromCoord = function (x, y) {
+  var col = Math.floor(x / this._tilesheet.tileWidth);
+  var row = Math.floor(y / this._tilesheet.tileHeight);
+  //if out-of-bounds, return nothing
+  if (row < 0 || row >= this._tiles.length ||
+      col < 0 || col >= this._tiles[row].length) {
+    return null;
+  } else {
+    return this.getTile(col, row);
+  }
 };
+
+/**
+ * Test if the given screen coordinate position is on a walkable tile.
+ * @param {number} x
+ * @param {number} y
+ * @return {boolean} Or null if coordinate point is out-of-bounds.
+ */
+TileMap.prototype.isWalkableCoord = function (x, y) {
+  var tile = this.getTileFromCoord(x, y);
+  if (tile) {
+    return tile.isWalkable();
+  } else {
+    return null;
+  }
+}
 
 /**
  * @return {string}
