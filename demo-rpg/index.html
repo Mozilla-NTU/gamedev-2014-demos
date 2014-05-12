@@ -50,12 +50,12 @@
       var ctx2 = layer2.getContext('2d');
           
       var sprite1 = new Sprite('./assets/character/darion.png', character_data.DEFAULT);
-      sprite1.x = 100;
-      sprite1.y = 220;
+      sprite1.x = 96;
+      sprite1.y = 224;
       
       var sprite2 = new Sprite('./assets/character/randomgirl.png', character_data.DEFAULT);
-      sprite2.x = 220;
-      sprite2.y = 120;
+      sprite2.x = 224;
+      sprite2.y = 160;
       
       var tilesheet = new TileSheet('./assets/tileset/village.png', village_data, 32, 32);
       var tilemap = new TileMap(meadow, tilesheet);
@@ -80,6 +80,7 @@
         window.requestAnimationFrame(drawFrame, layer2);
         ctx2.clearRect(0, 0, layer2.width, layer2.height);
         checkCollision(sprite1);
+        lookAt(sprite2, sprite1);
         renderer.draw(ctx2);
       }());
 
@@ -147,6 +148,27 @@
         //if moving up, test mid-top
         } else if (sprite.vy < 0 && !tilemap.isWalkableCoord(centerX, top)) {
           sprite.vy = 1;
+        }
+      }
+
+      /* Gives the appearance that spriteA is looking at spriteB.
+       * If spriteB is moving past spriteA's x or y position, play a single
+       * frame on spriteA's spritesheet to switch the animation sequence.
+       */
+      function lookAt (spriteA, spriteB) {
+        if (spriteB.vy > 0 && spriteB.y >= spriteA.y) {
+          spriteA.play(0); //down animation
+          spriteA.stop();
+        } else if (spriteB.vy < 0 && spriteB.y < spriteA.y) {
+          spriteA.play(3); //up animation
+          spriteA.stop();
+        }
+        if (spriteB.vx > 0 && spriteB.x >= spriteA.x) {
+          spriteA.play(2); //right animation
+          spriteA.stop();
+        } else if (spriteB.vx < 0 && spriteB.x < spriteA.x) {
+          spriteA.play(1); //left animation
+          spriteA.stop();
         }
       }
     };
