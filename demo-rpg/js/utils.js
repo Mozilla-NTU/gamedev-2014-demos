@@ -3,7 +3,6 @@
 * the browser to schedule a repaint of the window for the next animation frame.
 * Checks for cross-browser support, and, failing to find it, falls back to setTimeout.
 * @param {function} callback Function to call when it's time to update your animation for the next repaint.
-* @param {HTMLElement} element Optional parameter specifying the element that visually bounds the entire animation.
 * @return {number} Animation frame request.
 */
 if (!window.requestAnimationFrame) {

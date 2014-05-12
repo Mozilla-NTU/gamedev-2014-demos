@@ -77,7 +77,7 @@
        * Re-draw objects on layer2 canvas EACH frame.
        */
       (function drawFrame () {
-        window.requestAnimationFrame(drawFrame, layer2);
+        window.requestAnimationFrame(drawFrame);
         ctx2.clearRect(0, 0, layer2.width, layer2.height);
         checkCollision(sprite1);
         lookAt(sprite2, sprite1);
