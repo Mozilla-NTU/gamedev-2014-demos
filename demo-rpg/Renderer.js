@@ -1,9 +1,13 @@
-/* Manages the render order of drawable items keeping the depth correct.
+/**
+ * Manages the render order of drawable items keeping the depth correct.
+ * Given a TileMap containing tiles with a background and foreground
+ * image, render the background using `repaintBackground`.
+ * Tile foreground and drawable items are kept in order and rendered using `draw`.
  */
 function Renderer () {
   this._drawableItems = [];
   this._tilemap = null;
-  this.debug = false;
+  this.debug = false; //display bounding boxes (if supported)
 };
 
 /**
@@ -40,15 +44,17 @@ Renderer.prototype.setTileMap = function (tilemap) {
 };
 
 /**
- * Only draws the tile background to the specified context.
+ * Only draw the tile background to the specified context.
  * This doesn't need to be done very often.
  * @param {CanvasRenderingContext2D} ctx
  */
 Renderer.prototype.repaintBackground = function (ctx) {
+  //check if tilemap image is ready
   if (this._tilemap && this._tilemap._tilesheet.imageLoaded) {
-    var tiles = this._tilemap._tiles,
-        tilesheet = this._tilemap._tilesheet;
+    var tiles = this._tilemap._tiles;
+    var tilesheet = this._tilemap._tilesheet;
 
+    //iterate row/column and draw each tile
     for (var y = 0, lenY = tiles.length; y < lenY; y++) {
       for (var x = 0, lenX = tiles[y].length; x < lenX; x++) {
         var bg = tiles[y][x].data.background;
@@ -63,30 +69,31 @@ Renderer.prototype.repaintBackground = function (ctx) {
 };
 
 /**
- * Draws the tile foreground and everything in the drawable items render queue.
- * Tiles are draw from top-right to bottom-left. If a drawable-item is found
- * at the current y-height, draw it before continuing. This is how the
- * appearance of depth is maintained---from top to bottom.
- * Called every frame.
+ * Draws the tile foreground and the drawable items render queue---in correct order.
+ * Tiles are iterated by row/column and drawn from top-left to bottom-right.
+ * While progressing down the rows, if a drawable item is found at the
+ * current y-height, draw it before continuing. This is how the appearance of depth
+ * is maintained---drawing from top to bottom.
+ * This render function is called every frame.
  * @param {CanvasRenderingContext2D} ctx
  */
 Renderer.prototype.draw = function (ctx) {
-  //sort by buffer depth
+  //sort drawable items by depth (using y coordinate position)
   this._drawableItems.sort(Renderer.depthSort);
 
   //don't draw anything until the tilemap has been loaded
   if (this._tilemap && this._tilemap._tilesheet.imageLoaded) {
-    var tiles = this._tilemap._tiles,
-        tilesheet = this._tilemap._tilesheet,
-        i = 0; //drawableItem index
+    var tiles = this._tilemap._tiles;
+    var tilesheet = this._tilemap._tilesheet;
+    var i = 0; //drawableItem index
 
-    //iterate rows
-    for (var y=0, lenY=tiles.length; y < lenY; y++) {
+    //iterate down each row
+    for (var y = 0, lenY = tiles.length; y < lenY; y++) {
       //check if a drawable item falls within the current row 'band'
       var curScreenY = y * tilesheet.tileHeight;
       var nextScreenY = (y + 1) * tilesheet.tileHeight;
       
-      //draw and renderable items within the current row
+      //if so, draw all items located within the current row
       while (i < this._drawableItems.length &&
              this._drawableItems[i].y + tilesheet.tileHeight > curScreenY &&
              this._drawableItems[i].y + tilesheet.tileHeight <= nextScreenY) {
@@ -95,7 +102,7 @@ Renderer.prototype.draw = function (ctx) {
       }
 
       //draw tile foreground, iterate columns
-      for (var x=0, lenX=tiles[y].length; x < lenX; x++) {
+      for (var x = 0, lenX = tiles[y].length; x < lenX; x++) {
         var fg = tiles[y][x].data.foreground;
         if (fg) {
           offsetX = x * tilesheet.tileWidth;

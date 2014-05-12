@@ -7,12 +7,15 @@ function TileNode (tiledata) {
 }
 
 /**
+ * Test if the tile is walkable.
  * @return {boolean}
  */
 TileNode.prototype.isWalkable = function () {
   return this._data.walkable;
 };
 
+
+/***********************/
 
 
 /**
@@ -46,17 +49,6 @@ TileMap.prototype.setTilesFromLayout = function (layout) {
       this._tiles[y][x] = new TileNode(tiledata);
     }
   }
-};
-
-TileMap.prototype.toString = function () {
-  var str = '\n';
-  for (var y=0; y < this._tiles.length; y++) {
-    for (var x=0; x < this._tiles[y].length; x++) {
-      str += this._tiles[y][x].data.shortname + ' ';
-    }
-    str += '\n';
-  }
-  return str;
 };
 
 /*
@@ -104,4 +96,18 @@ TileMap.prototype.getTileCoord = function (coordX, coordY) {
   var x = Math.floor(coordX / this._tilesheet.tileWidth);
   var y = Math.floor(coordY / this._tilesheet.tileHeight);
   return this.getTile(x, y);
+};
+
+/**
+ * @return {string}
+ */
+TileMap.prototype.toString = function () {
+  var str = '\n';
+  for (var y=0; y < this._tiles.length; y++) {
+    for (var x=0; x < this._tiles[y].length; x++) {
+      str += this._tiles[y][x].data.shortname + ' ';
+    }
+    str += '\n';
+  }
+  return str;
 };

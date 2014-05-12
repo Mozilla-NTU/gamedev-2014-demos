@@ -1,3 +1,8 @@
+/**
+ * A Sprite plays a series of animations using a spritesheet image.
+ * @param {url} imageURL
+ * @param {object} tileSheetData
+ */
 function Sprite (imageURL, tileSheetData) {
   this._data = tileSheetData;
   
@@ -23,7 +28,8 @@ function Sprite (imageURL, tileSheetData) {
   }).bind(this);
   this._image.src = imageURL;
 
-  //position on the sprite sheet to start drawing from
+  //position on the spritesheet to begin drawing from
+  //used to determine sequence and cell
   this._imageOffsetX = 0;
   this._imageOffsetY = 0;
   
@@ -36,16 +42,17 @@ function Sprite (imageURL, tileSheetData) {
 }
 
 /**
- * Select an animation sequence to play, as grouped by rows on the sprite sheet.
- * @param {number} row  Animation sequence row to play.
+ * Select an animation sequence to play, as grouped by rows on the spritesheet.
+ * @param {number} row Animation sequence row to play.
  */
 Sprite.prototype.play = function (row) {
   if (row < 0 || row > (this._data.rows - 1)) {
     throw new RangeError("Invalid row sequence: " + row);
   }
   
-  /* The sprite sheet is grouped by rows, and each row contains the cells for animating a particular direction.
-   * When picking a direction to animate, determine the row's y-offset on the sprite sheet.
+  /* The spritesheet is grouped by rows, and each row contains a sequence of cells for
+   * animating a particular direction. When picking a direction to animate, determine
+   * the row's y-offset on the sprite sheet.
    */
   this._imageOffsetY = row * this._data.cellHeight;
 
@@ -67,7 +74,7 @@ Sprite.prototype.stop = function () {
 };
 
 /**
- * Resets the counter and x-offset on the sprite sheet to point to the first sample of the animation sequence.
+ * Resets the counter and x-offset on the spritesheet to point to the first sample of the animation sequence.
  */
 Sprite.prototype.resetCounter = function () {
   this.counter = 0;
@@ -77,21 +84,27 @@ Sprite.prototype.resetCounter = function () {
 
 /**
  * Keeps track of the frame counter and timeline change points.
- * Each sample cell in an animation sequence is rendered a set amount of frames (as determined by this.sampleRate) before
- * moving on to the next sample. When the counter has reached the end of the sequence it is reset.
+ * Each sample cell in an animation sequence is rendered a set amount of
+ * frames (as determined by this.sampleRate) before moving on to the next
+ * sample. When the counter has reached the end of the sequence it is reset.
  */
 Sprite.prototype.tick = function () { 
   if (this.counter === this.sampleEnd) {
     this.resetCounter();
   } else if (this.counter === this.sampleChange) {
     //once a change point has been reached,
-    //update the x-offset on the sprite sheet to point to a new sample cell.
+    //update the x-offset on the spritesheet to point to a new sample cell.
     this._imageOffsetX += this._data.cellWidth;
     this.sampleChange += this.sampleRate; //set next change point
   }
   this.counter += 1;
 };
 
+/**
+ * Render the sprite to the canvas.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {boolean} debug
+ */
 Sprite.prototype.draw = function (ctx, debug) {
   //apply velocity
   this.x += this.vx;
@@ -115,19 +128,27 @@ Sprite.prototype.draw = function (ctx, debug) {
     ctx.restore();
   }
 
-  //useful for troubleshooting
   if (debug) {
-    ctx.save();
-    //draw bounding box
-    ctx.beginPath();
-    ctx.strokeStyle = "red";
-    ctx.rect(this.x, this.y, this.width, this.height);
-    ctx.stroke();
-    //draw origin point
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, 3, 0, 2*Math.PI);
-    ctx.fill();
-    ctx.restore();
+    this._debugDraw(ctx);
   }
+};
+
+/**
+ * Draw a bounding box around the sprite's width and height.
+ * Useful for troubleshooting.
+ * @param {CanvasRenderingContext2D} ctx
+ */
+Sprite.prototype._debugDraw = function (ctx) {
+  ctx.save();
+  //draw bounding box
+  ctx.beginPath();
+  ctx.strokeStyle = "red";
+  ctx.rect(this.x, this.y, this.width, this.height);
+  ctx.stroke();
+  //draw origin point
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, 3, 0, 2*Math.PI);
+  ctx.fill();
+  ctx.restore();
 };
