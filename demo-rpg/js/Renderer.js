@@ -7,7 +7,16 @@
 function Renderer () {
   this._drawableItems = [];
   this._tilemap = null;
-  this.debug = false; //display bounding boxes (if supported)
+  this.debug = false;
+}
+
+/**
+ * The renderer handles the tilemap by separating the tile
+ * background and foreground drawing steps.
+ * @param {TileMap} tilemap
+ */
+Renderer.prototype.setTileMap = function (tilemap) {
+  this._tilemap = tilemap;
 };
 
 /**
@@ -35,15 +44,6 @@ Renderer.prototype.remove = function (item) {
 };
 
 /**
- * The renderer handles the tilemap by separating the tile
- * background and foreground drawing steps.
- * @param {TileMap} tilemap
- */
-Renderer.prototype.setTileMap = function (tilemap) {
-  this._tilemap = tilemap;
-};
-
-/**
  * Only draw the tile background to the specified context.
  * This doesn't need to be done very often.
  * @param {CanvasRenderingContext2D} ctx
@@ -55,14 +55,14 @@ Renderer.prototype.repaintBackground = function (ctx) {
     var tilesheet = this._tilemap._tilesheet;
 
     //iterate row/column and draw each tile
-    for (var y = 0, lenY = tiles.length; y < lenY; y++) {
-      for (var x = 0, lenX = tiles[y].length; x < lenX; x++) {
-        var bg = tiles[y][x].data.background;
-        var offsetX = x * tilesheet.tileWidth;
-        var offsetY = y * tilesheet.tileHeight;
+    for (var row = 0, rows = tiles.length; row < rows; row++) {
+      for (var col = 0, cols = tiles[row].length; col < cols; col++) {
+        var x = col * tilesheet.tileWidth;
+        var y = row * tilesheet.tileHeight;
+        var bg_data = tiles[row][col].data.background;
         ctx.drawImage(tilesheet.image,
-                      bg.x, bg.y, bg.width, bg.height,
-                      offsetX, offsetY, bg.width, bg.height);
+                      bg_data.x, bg_data.y, bg_data.width, bg_data.height,
+                      x, y, bg_data.width, bg_data.height);
       }
     }
   }
@@ -88,30 +88,30 @@ Renderer.prototype.draw = function (ctx) {
     var i = 0; //drawableItem index
 
     //iterate down each row
-    for (var y = 0, lenY = tiles.length; y < lenY; y++) {
+    for (var row = 0, rows = tiles.length; row < rows; row++) {
       //check if a drawable item falls within the current row 'band'
-      var curScreenY = y * tilesheet.tileHeight;
-      var nextScreenY = (y + 1) * tilesheet.tileHeight;
+      var y_cur  = row * tilesheet.tileHeight;
+      var y_next = (row + 1) * tilesheet.tileHeight;
       
       //if so, draw all items located within the current row
       while (i < this._drawableItems.length &&
-             this._drawableItems[i].y + tilesheet.tileHeight > curScreenY &&
-             this._drawableItems[i].y + tilesheet.tileHeight <= nextScreenY) {
+             this._drawableItems[i].y + tilesheet.tileHeight > y_cur &&
+             this._drawableItems[i].y + tilesheet.tileHeight <= y_next) {
         this._drawableItems[i].draw(ctx, this.debug);
         i++;
       }
 
-      //draw tile foreground, iterate columns
-      for (var x = 0, lenX = tiles[y].length; x < lenX; x++) {
-        var fg = tiles[y][x].data.foreground;
-        if (fg) {
-          offsetX = x * tilesheet.tileWidth;
-          offsetY = y * tilesheet.tileHeight;
-          if (fg.offsetX) offsetX += fg.offsetX;
-          if (fg.offsetY) offsetY += fg.offsetY;
+      //iterate columns, drawing tile foreground
+      for (var col = 0, cols = tiles[row].length; col < cols; col++) {
+        var fg_data = tiles[row][col].data.foreground;
+        if (fg_data) {
+          var x = col * tilesheet.tileWidth;
+          var y = row * tilesheet.tileHeight;
+          if (fg_data.offsetX) x += fg_data.offsetX;
+          if (fg_data.offsetY) y += fg_data.offsetY;
           ctx.drawImage(tilesheet.image,
-                        fg.x, fg.y, fg.width, fg.height,
-                        offsetX, offsetY, fg.width, fg.height);
+                        fg_data.x, fg_data.y, fg_data.width, fg_data.height,
+                        x, y, fg_data.width, fg_data.height);
         }
       }
     }
@@ -120,7 +120,7 @@ Renderer.prototype.draw = function (ctx) {
 };
 
 /**
- * Draw the tile grid.
+ * Draw the tile grid representation.
  * @param {CanvasRenderingContext2D} ctx
  */
 Renderer.prototype._debugDraw = function (ctx) {

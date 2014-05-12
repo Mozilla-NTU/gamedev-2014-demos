@@ -128,9 +128,7 @@ Sprite.prototype.draw = function (ctx, debug) {
     ctx.restore();
   }
 
-  if (debug) {
-    this._debugDraw(ctx);
-  }
+  if (debug) this._debugDraw(ctx);
 };
 
 /**

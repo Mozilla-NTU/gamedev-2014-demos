@@ -1,8 +1,15 @@
 /**
- * @param {url}    imageURL      Source url for image to load.
- * @param {object} tileSheetData Description of tiles specified in tile-data file.
- * @param {number} tileWidth     Width of tiles in pixels.
- * @param {number} tileHeight    Height of tiles in pixels.
+ * This class maps the tilesheet image with its tilesheet data.
+ * A tilesheet is a single composite image containing multiple
+ * element images that are drawn to the screen individually.
+ * The tilesheet data object contains details about specific element
+ * images, such as its position within the tilesheet, height, width,
+ * offsets, and metadata like names and collision info.
+ * @constructor
+ * @param {url}    imageURL      Url of tilesheet image to load.
+ * @param {object} tileSheetData Information about tile elements within the tilesheet.
+ * @param {number} tileWidth     Width of base tile in pixels.
+ * @param {number} tileHeight    Height of base tile in pixels.
  */
 function TileSheet (imageURL, tileSheetData, tileWidth, tileHeight) {
   this.tileWidth = tileWidth;
@@ -12,7 +19,6 @@ function TileSheet (imageURL, tileSheetData, tileWidth, tileHeight) {
   this._data = tileSheetData;
 
   //load image
-  //need this so we don't try to draw 
   this.image.onload = (function () {
     this.imageLoaded = true;
   }).bind(this);
@@ -20,8 +26,8 @@ function TileSheet (imageURL, tileSheetData, tileWidth, tileHeight) {
 }
 
 /**
- * Return tile data for a tile specified using its property name,
- * specfied on the tile description object.
+ * Using the object property name specified in the tilesheet
+ * data object, return the data for a tile element.
  * @param {string} name
  * @return {object}
  */
@@ -30,8 +36,9 @@ TileSheet.prototype.getTileDataByName = function (name) {
 };
 
 /**
- * Return tile data for a tile specified using its shortname, the
- * character used in the layout map.
+ * Using the 'shortname' property that is specified within a
+ * tile element description, return the data for a tile element.
+ * This is typically the single character used in the layout map.
  * @param {string} shortname
  * @return {object}
  */
