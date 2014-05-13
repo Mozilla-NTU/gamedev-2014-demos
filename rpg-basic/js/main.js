@@ -5,6 +5,9 @@ function main () {
   //get canvas element and its rendering context
   var layer2 = document.getElementById('layer2');
   var ctx = layer2.getContext('2d');
+  //minimize calls to the dom
+  var SCREEN_WIDTH = layer2.width;
+  var SCREEN_HEIGHT = layer2.height;
   
   var sprite1 = new Sprite('./assets/character/guy1.png', {
     cols: 4,
@@ -49,7 +52,7 @@ function main () {
    */
   (function drawFrame () {
     window.requestAnimationFrame(drawFrame);
-    ctx.clearRect(0, 0, layer2.width, layer2.height);
+    ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     checkCollision(sprite1);
     lookAt(sprite2, sprite1);
     moveBird(bird);
@@ -102,14 +105,14 @@ function main () {
    */
   function checkCollision (sprite) {
     //test right boundary
-    if (sprite.vx > 0 && (sprite.x + sprite.width) >= layer2.width) {
+    if (sprite.vx > 0 && (sprite.x + sprite.width) >= SCREEN_WIDTH) {
       sprite.vx = -1;
       //test left boundary
     } else if (sprite.vx < 0 && sprite.x < 0) {
       sprite.vx = 1;
     }
     //test bottom boundary
-    if (sprite.vy > 0 && (sprite.y + sprite.height) >= layer2.height) {
+    if (sprite.vy > 0 && (sprite.y + sprite.height) >= SCREEN_HEIGHT) {
       sprite.vy = -1;
       //test top boundary
     } else if (sprite.vy < 0 && sprite.y < 0) {
@@ -145,12 +148,12 @@ function main () {
    */
   function moveBird (sprite) {
     //check for screen wrap
-    if (sprite.x > layer2.width) {
+    if (sprite.x > SCREEN_WIDTH) {
       sprite.x = -sprite.width;
       //start at random height on canvas within two edge tiles
       var tileHeight = 32;
       var min = (tileHeight * 2);
-      var max = layer2.height - (tileHeight * 2);
+      var max = SCREEN_HEIGHT - (tileHeight * 2);
       sprite.y = Math.floor(Math.random() * (max - min + 1)) + min;
     }
     sprite.x += 2;
