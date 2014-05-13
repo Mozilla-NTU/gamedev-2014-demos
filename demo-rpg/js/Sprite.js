@@ -1,11 +1,30 @@
 /**
- * A Sprite plays a series of animations using a spritesheet image.
- * @param {url} imageURL
- * @param {object} tileSheetData
+ * A Sprite plays a collection of animation sequences using a spritesheet image.
+ * @param {string|Image} imageURL Image URL location or Image element for spritesheet.
+ * @param options
+ * @param options.width       Width of the sprite object.
+ * @param options.height      Height of the sprite object.
+ * @param options.rows        Number of rows in spritesheet (animation sequences)
+ * @param options.cols        Number of columns in spritesheet (frames in an animation)
+ * @param options.cellWidth   (optional) Width of a single animation cell, default to sprite width.
+ * @param options.cellHeight  (optional) Height of a single animation cell, default to sprite height.
+ * @param options.cellOffsetX (optional) Horizontal offset of the image within its cell, default to 0.
+ * @param options.cellOffsetY (optional) Vertical offset of the image within its cell, default to 0.
  */
-function Sprite (imageURL, tileSheetData) {
-  this._data = tileSheetData;
-  
+function Sprite (imageURL, options) {
+  //contains information about the frame dimensions for the spritesheet image
+  this._data = options || {};
+  //set up values for a single frame of animation. use defaults if not provided
+  if (typeof this._data.width !== 'number') this._data.width = 0;
+  if (typeof this._data.height !== 'number') this._data.height = 0;
+  if (typeof this._data.rows !== 'number') this._data.rows = 0;
+  if (typeof this._data.cols !== 'number') this._data.cols = 0;
+  if (typeof this._data.cellWidth !== 'number') this._data.cellWidth = this._data.width;
+  if (typeof this._data.cellHeight !== 'number') this._data.cellHeight = this._data.height;
+  if (typeof this._data.cellOffsetX !== 'number') this._data.cellOffsetX = 0;
+  if (typeof this._data.cellOffsetY !== 'number') this._data.cellOffsetY = 0;
+
+  //screen position
   this.x = 0;
   this.y = 0;
   this.width = this._data.width;
@@ -20,16 +39,13 @@ function Sprite (imageURL, tileSheetData) {
   this.vx = 0;
   this.vy = 0;
   
-  //load image
+  //load spritesheet image
   this.imageLoaded = false;
-  this._image = new Image();
-  this._image.onload = (function () {
-    this.imageLoaded = true;
-  }).bind(this);
-  this._image.src = imageURL;
+  this._image = null;
+  this.setImage(imageURL);
 
   //position on the spritesheet to begin drawing from
-  //used to determine sequence and cell
+  //used to determine the animation sequence and frame
   this._imageOffsetX = 0;
   this._imageOffsetY = 0;
   
@@ -40,6 +56,26 @@ function Sprite (imageURL, tileSheetData) {
   this.sampleChange = this.sampleRate;  //The next change point on the timeline that will cause a sample transition.
   this.sampleEnd = this.sampleRate * this._data.cols; //The end of the timeline.
 }
+
+/**
+ * Set the spritesheet using a URL string or an Image element.
+ * @param {url|Image} img
+ */
+Sprite.prototype.setImage = function (img) {
+  this.imageLoaded = false;
+  if (img instanceof Image && img.complete === true) {
+    this._image = img;
+    this.imageLoaded = true;
+  } else if (typeof img === 'string') {
+    this._image = new Image();
+    this._image.onload = (function () {
+      this.imageLoaded = true;
+    }).bind(this);
+    this._image.src = img;
+  } else {
+    throw new TypeError("Image must be a URL string or an already loaded Image element.");
+  }
+};
 
 /**
  * Select an animation sequence to play, as grouped by rows on the spritesheet.
