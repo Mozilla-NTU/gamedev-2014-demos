@@ -58,6 +58,18 @@
       var sprite2 = new Sprite('./assets/character/girl1.png', character_data.DEFAULT);
       sprite2.x = 256;
       sprite2.y = 352;
+
+      var bird = new Sprite('./assets/character/birdie.png', {
+        cols: 14,
+        rows: 1,
+        width: 183,
+        height: 168
+      });
+      //start off screen
+      bird.x = -bird.width;
+      bird.y = 160;
+      bird.scaleX = bird.scaleY = 0.4;
+      bird.play(0);
       
       var tilesheet = new TileSheet('./assets/tileset/village.png', village_data, 32, 32);
       var tilemap = new TileMap(meadow, tilesheet);
@@ -83,7 +95,10 @@
         ctx2.clearRect(0, 0, layer2.width, layer2.height);
         checkCollision(sprite1);
         lookAt(sprite2, sprite1);
+        moveBird(bird);
         renderer.draw(ctx2);
+        //draw bird on top of everything
+        bird.draw(ctx2, renderer.debug);
       }());
 
       
@@ -172,6 +187,23 @@
           spriteA.play(1); //left animation
           spriteA.stop();
         }
+      }
+
+      /* This function is called every frame and simply moves the
+       * sprite horizontally across the entire length of the canvas.
+       * When the sprite reaches the end, wrap it around to the
+       * beginning, starting at a random y position.
+       */
+      function moveBird (sprite) {
+        //check for screen wrap
+        if (sprite.x > layer2.width) {
+          sprite.x = -sprite.width;
+          //start at random height on canvas within two edge tiles
+          var min = (tilesheet.tileHeight * 2);
+          var max = layer2.height - (tilesheet.tileHeight * 2);
+          sprite.y = Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        sprite.x += 2;
       }
     });
     </script>
