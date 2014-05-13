@@ -41,7 +41,7 @@
     <script src="./assets/character/character_data.js"></script>
     <script src="./levels/meadow.js"></script>
     <script>
-    window.onload = function () {
+    document.addEventListener('DOMContentLoaded', function () {
       "use strict";
       //get canvas elements and their rendering contexts
       var layer1 = document.getElementById('layer1'); //tile background
@@ -171,7 +171,7 @@
           spriteA.stop();
         }
       }
-    };
+    });
     </script>
   </body>
 </html>
