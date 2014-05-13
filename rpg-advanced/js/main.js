@@ -7,6 +7,9 @@ function main () {
   var layer2 = document.getElementById('layer2'); //tile foreground and sprites
   var ctx1 = layer1.getContext('2d');
   var ctx2 = layer2.getContext('2d');
+  //minimize calls to the dom
+  var SCREEN_WIDTH = layer2.width;
+  var SCREEN_HEIGHT = layer2.height;
   
   var sprite1 = new Sprite('./assets/character/guy1.png', character_data.DEFAULT);
   sprite1.x = 128;
@@ -49,7 +52,7 @@ function main () {
    */
   (function drawFrame () {
     window.requestAnimationFrame(drawFrame);
-    ctx2.clearRect(0, 0, layer2.width, layer2.height);
+    ctx2.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     checkCollision(sprite1);
     lookAt(sprite2, sprite1);
     moveBird(bird);
@@ -153,11 +156,11 @@ function main () {
    */
   function moveBird (sprite) {
     //check for screen wrap
-    if (sprite.x > layer2.width) {
+    if (sprite.x > SCREEN_WIDTH) {
       sprite.x = -sprite.width;
       //start at random height on canvas within two edge tiles
       var min = (tilesheet.tileHeight * 2);
-      var max = layer2.height - (tilesheet.tileHeight * 2);
+      var max = SCREEN_HEIGHT - (tilesheet.tileHeight * 2);
       sprite.y = Math.floor(Math.random() * (max - min + 1)) + min;
     }
     sprite.x += 2;
