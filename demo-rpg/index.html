@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>RPG Adventure!</title>
+    <title>RPG Adventure! - Advanced</title>
     <meta name="author" content="Billy Lamberta, www.lamberta.org">
-    <meta name="description" content="Basic RPG-style game developed for 2014 Singapore HTML5 Gamedev Workshop.">
+    <meta name="description" content="RPG-style game developed for 2014 Singapore HTML5 Gamedev Workshop.">
     <style>
     body { background-color: #bbb; }
     #container {
@@ -12,20 +12,22 @@
       width: 512px;
       height: 512px;
     }
-    #container canvas {
+    #container img, #container canvas {
       position: absolute;
       left: 0px;
       top: 0px;
     }
     #container canvas#layer1 { z-index: 1; }
     #container canvas#layer2 { z-index: 2; }
+    #container img#layer3    { z-index: 3; }
     </style>
   </head>
   <body>
-    <header>RPG Adventure!</header>
+    <header>RPG Adventure! - Advanced</header>
     <div id="container">
       <canvas id="layer1" width="512" height="512"></canvas>
       <canvas id="layer2" width="512" height="512"></canvas>
+      <img id="layer3" width="512" height="512" src="./assets/clouds.png">
     </div>
     <footer>
       Press arrow keys to move.<br/>
@@ -49,13 +51,13 @@
       var ctx1 = layer1.getContext('2d');
       var ctx2 = layer2.getContext('2d');
           
-      var sprite1 = new Sprite('./assets/character/darion.png', character_data.DEFAULT);
-      sprite1.x = 96;
-      sprite1.y = 224;
+      var sprite1 = new Sprite('./assets/character/guy1.png', character_data.DEFAULT);
+      sprite1.x = 128;
+      sprite1.y = 384;
       
-      var sprite2 = new Sprite('./assets/character/randomgirl.png', character_data.DEFAULT);
-      sprite2.x = 224;
-      sprite2.y = 160;
+      var sprite2 = new Sprite('./assets/character/girl1.png', character_data.DEFAULT);
+      sprite2.x = 256;
+      sprite2.y = 352;
       
       var tilesheet = new TileSheet('./assets/tileset/village.png', village_data, 32, 32);
       var tilemap = new TileMap(meadow, tilesheet);

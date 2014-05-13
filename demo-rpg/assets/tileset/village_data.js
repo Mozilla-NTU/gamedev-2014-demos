@@ -279,7 +279,7 @@ village_data.TREE_BIG_PINK = {
 
 village_data.TORII = {
   shortname: '#',
-  walkable: false,
+  walkable: true,
   background: village_data.GRASS.background,
   foreground: {
     x: 8,
