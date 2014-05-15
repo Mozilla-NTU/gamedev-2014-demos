@@ -1,9 +1,12 @@
 
+#game {
+  margin-right: auto;
+  margin-left: auto;
+}
+
 .board {
   position: relative;
   background-color: #333;
-  margin-right: auto;
-  margin-left: auto;
 }
 
 .piece {
@@ -23,4 +26,24 @@
 
 .piece.player2 {
   background-color: #2C2;
+}
+
+.message {
+  font-size: 3em;
+  font-family: sans-serif;
+  text-align: center;
+  display: inline-block;
+  border-top: 200px;
+}
+
+.message.hidden {
+  display: none;
+}
+
+.message.player1 {
+  color: #B22;
+}
+
+.message.player2 {
+  color: #2B2;
 }

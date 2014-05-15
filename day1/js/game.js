@@ -1,6 +1,8 @@
 (function(global){
   var ROW_HEIGHT = 100;
   var COL_WIDTH = 100;
+  var ROWS = 6;
+  var COLS = 7;
 
   function Piece(opts){
     this.game = opts.game;
@@ -12,20 +14,20 @@
     this.col = opts.col;
     console.log("making place for ", this.row, this.col);
     this.player = 0;
-    this.el.onclick = this.onclick.bind(this);
+    this.el.addEventListener("click", this.onclick.bind(this));
     this.render();
   }
 
-  Piece.prototype.playerClasses = {
+  Piece.playerClasses = {
     2: "player2",
     1: "player1",
     0: "empty"
   };
 
   Piece.prototype.removeClasses = function(){
-    for (var key in this.playerClasses){
-      var clazz = this.playerClasses[key];
-      this.el.classList.remove(clazz);
+    for (var key in Piece.playerClasses){
+      var styleClass = Piece.playerClasses[key];
+      this.el.classList.remove(styleClass);
     }
   };
 
@@ -36,144 +38,117 @@
 
   Piece.prototype.render = function(){
     this.el.style.left = (5 + this.col * 100) + "px";
-    this.el.style.top = ((this.game.rows - 1) * ROW_HEIGHT + 5 - this.row * 100) + "px";
+    this.el.style.top = ((ROWS - 1) * ROW_HEIGHT + 5 - this.row * 100) + "px";
   };
 
-  Piece.prototype.setState = function(player){
-    console.log("setting state", this.row, this.col, player);
+  Piece.prototype.setPlayerNumber = function(player){
     // takes player 0, 1, or 2 to set proper color
+    this.player = player;
     this.removeClasses();
-    this.el.classList.add(this.playerClasses[player]);
+    this.el.classList.add(Piece.playerClasses[player]);
   };
 
+  function Game(el, messageEl){
 
-  function Game(el){
+    this.containerEl = el;
+    var boardEl = document.createElement("div");
+    this.containerEl.appendChild(boardEl);
+    this.boardEl = boardEl;
+    this.boardEl.classList.add("board");
+    this.boardEl.style.height = ((ROW_HEIGHT * ROWS) + 10) + "px";
+    this.boardEl.style.width = ((COL_WIDTH * COLS) + 10) + "px";
+    this.containerEl.style.width = this.boardEl.style.width;
 
-    this.rows = 6;
-    this.cols = 7;
+    var messageEl = document.createElement("div");
+    this.containerEl.appendChild(messageEl);
+    this.messageEl = messageEl;
+    this.messageEl.classList.add("message");
+    this.messageEl.classList.add("hidden");
 
-    this.el = el;
-    this.el.classList.add("board");
-    this.el.style.height = ((ROW_HEIGHT * this.rows) + 10) + "px";
-    this.el.style.width = ((COL_WIDTH * this.cols) + 10) + "px";
-    this.pieces = [];
     this.activePlayer = 1;
-
-    for(var row = 0; row < this.rows; row++){
-      for (var col = 0; col < this.cols; col++){
-        var el = document.createElement("div");
-        this.el.appendChild(el);
-        
-        this.pieces.push(new Piece({
-          game: this,
-          row: row,
-          col: col,
-          el: el
-        }));
-      }
-    }
+    this.over = false; 
 
     this.setupBoard();
   }
 
+  Game.messageClasses = {
+    2: "player2",
+    1: "player1",
+    0: "hidden"
+  }
+
   Game.prototype.setupBoard = function(){
     this.board = [];
-    for(var row = 0; row < this.rows; row++){
+    for(var row = 0; row < ROWS; row++){
       this.board[row] = [];
-      for (var col = 0; col < this.cols; col++){
-        this.board[row][col] = 0;
+      for (var col = 0; col < COLS; col++){
+        var el = document.createElement("div");
+        this.boardEl.appendChild(el);
+        this.board[row][col] = new Piece({
+          game: this, 
+          row: row, 
+          col: col,
+          el: el
+        });
       }
     }
   };
 
-  Game.prototype.checkWin = function(){
-    // check horizontal
-    console.log("checking win");
-    for (var i = 0; i < this.rows; i++){
-      var streak = [];
-      for (var j = 0; j < this.cols; j++){
-        var player = this.board[i][j];
-        var last = streak[streak.length - 1];
-
-        if(player !== 0 && (!last || player === last)){
-          streak.push(player);
-          if (streak.length == 4){
-            this.won(player);
-            return;
-          }
-        } else {
-          streak = [];
-        }
-      }
-    }
+  Game.prototype.checkWin = function(row, col, player){
     
-    // check vertical
-    for (var j = 0; j < this.cols; j++) {
-      for (var i = 0; i < this.rows; i++) {
-        var player = this.board[i][j];
-        var last = streak[streak.length - 1];
-        if(player !== 0 && (!last || player === last)){
-          streak.push(player);
-          if (streak.length === 4){
-            this.won(player);
-            return;
-          }
-        } else {
-          streak = [];
-        }
-      }
-    }
+    var horizontalStreak = 0;
 
-    for(var i = 0; i < this.rows; i++){
-      this.checkDiagonal(i, 0);
-      this.checkDiagonal(i, this.rows - 1, true);
-    }
-
-    for(var j = 0; j < this.cols; j++){
-      this.checkDiagonal(0, j);
-      this.checkDiagonal(0, j, true);
-    }
-  }
-
-  Game.prototype.checkDiagonal = function (row, col, reverse){
-    reverse = reverse || false;
-    var player = this.board[row][col];
-    var streak = [];
-    while (typeof player !== "undefined"){
-      var last = streak[streak.length - 1];
-      if (player !== 0 && (!last || player === last)){
-        streak.push(player);
-        if (streak.length === 4){
-          this.won(player);
-          return;
-        }
+    for (var j = 0; j < COLS; j++) {
+      var current = this.board[row][j].player;
+      
+      if(current === player) {
+        horizontalStreak++;
       } else {
-        streak = [];
+        horizontalStreak = 0;
       }
-      if (reverse){
-        row++;
-        col--;
+      
+      if(horizontalStreak === 4){
+        this.won(player);
+        return;
+      }
+    }
+
+    var verticalStreak = 0;
+    for (var i = 0; i < ROWS; i ++){
+      var current = this.board[i][col].player;
+      
+      if(current === player) {
+        verticalStreak++;
       } else {
-        row++;
-        col++;
+        verticalStreak = 0;
       }
-      player = this.board[row] && this.board[row][col];
+
+      if(verticalStreak === 4){
+        this.won(player);
+        return;
+      }
     }
   }
 
   Game.prototype.won = function(player){
-    console.log("player", player, "won!");
+    this.over = true;
+    this.messageEl.classList.remove("hidden");
+    this.messageEl.classList.add(Game.messageClasses[player]);
+    this.messageEl.innerHTML = "Player " + player + " wins! <small>refresh to play again</small>";
   }
 
   Game.prototype.clickedColumn = function(col){
-    for(var row = 0; row < this.rows; row++){
-      if (this.board[row][col] === 0) {
-        this.board[row][col] = this.activePlayer;
+    if (this.over){
+      return;
+    }
+    for(var row = 0; row < ROWS; row++){
+      console.log(this.board[row][col]);
+      if (this.board[row][col].player === 0) {
+        this.board[row][col].setPlayerNumber(this.activePlayer);
         this.updatedPiece(row, col, this.activePlayer);
-        this.checkWin();
+        this.checkWin(row, col, this.activePlayer);
 
         this.activePlayer = (this.activePlayer % 2) + 1;
-        console.log("activePlayer is now", this.activePlayer);
         return true;
       }
     }
@@ -182,12 +157,10 @@
 
   Game.prototype.updatedPiece = function(row, col, player) {
     console.log("updating piece", row, col, player);
-    for (var i = 0, piece; piece = this.pieces[i]; i++){
-      if (piece.row === row && piece.col === col){
-        piece.setState(player);
-      }
-    }
+    var piece = this.board[row][col];
+    piece.setPlayerNumber(player);
   };
+
 
   // external interface
   global.Game = Game;
