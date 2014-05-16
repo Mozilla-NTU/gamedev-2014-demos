@@ -155,6 +155,9 @@
   };
 
   // external interface
-  global.Game = Game;
+  window.addEventListener("DOMContentLoaded", function(){
+    var el = document.getElementById("game");
+    new Game(el);
+  });
 
 })(window)
