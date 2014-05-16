@@ -1,0 +1,41 @@
+
+#game {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.board {
+  position: relative;
+  background-color: #333;
+}
+
+.piece {
+  position: absolute;
+  height: 90px;
+  width: 90px;
+  margin: 5px;
+}
+
+.piece.empty {
+  background-color: #CCC;
+}
+
+.piece.player1 {
+  background-color: yellow;
+}
+
+.piece.player2 {
+  background-color: blue;
+}
+
+.message {
+  font-size: 3em;
+  font-family: sans-serif;
+  text-align: center;
+  display: inline-block;
+  border-top: 200px;
+}
+
+.message.hidden {
+  display: none;
+}
