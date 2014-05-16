@@ -21,11 +21,11 @@
 }
 
 .piece.player1 {
-  background-color: #C22;
+  background-color: yellow;
 }
 
 .piece.player2 {
-  background-color: #2C2;
+  background-color: blue;
 }
 
 .message {
@@ -38,12 +38,4 @@
 
 .message.hidden {
   display: none;
-}
-
-.message.player1 {
-  color: #B22;
-}
-
-.message.player2 {
-  color: #2B2;
 }

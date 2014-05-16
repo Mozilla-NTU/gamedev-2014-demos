@@ -48,7 +48,7 @@
     this.el.classList.add(Piece.playerClasses[player]);
   };
 
-  function Game(el, messageEl){
+  function Game(el){
 
     this.containerEl = el;
     var boardEl = document.createElement("div");
@@ -69,12 +69,6 @@
     this.over = false; 
 
     this.setupBoard();
-  }
-
-  Game.messageClasses = {
-    2: "player2",
-    1: "player1",
-    0: "hidden"
   }
 
   Game.prototype.setupBoard = function(){
@@ -133,7 +127,6 @@
   Game.prototype.won = function(player){
     this.over = true;
     this.messageEl.classList.remove("hidden");
-    this.messageEl.classList.add(Game.messageClasses[player]);
     this.messageEl.innerHTML = "Player " + player + " wins! <small>refresh to play again</small>";
   }
 
@@ -160,7 +153,6 @@
     var piece = this.board[row][col];
     piece.setPlayerNumber(player);
   };
-
 
   // external interface
   global.Game = Game;
