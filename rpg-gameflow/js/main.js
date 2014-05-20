@@ -46,6 +46,22 @@ function main () {
   bird.y = 160;
   bird.scaleX = bird.scaleY = 0.4;
   bird.play(0);
+
+  //anything in the render list must implement the `.draw(ctx)` method.
+  var rootNode = new DrawNode();
+
+  
+
+  var titleImage = new CanvasImage('./assets/title-background.png');
+  rootNode.addChild(titleImage);
+  
+  var titleScreen = new DrawNode();
+  titleScreen.addChild(titleImage);
+
+  var gameScreen = new DrawNode();
+  gameScreen.addChild(sprite1);
+  gameScreen.addChild(sprite2);
+  gameScreen.addChild(bird);
   
   /* Main animation loop:
    * Re-draw objects on layer2 canvas EACH frame.
@@ -56,9 +72,8 @@ function main () {
     checkCollision(sprite1);
     lookAt(sprite2, sprite1);
     moveBird(bird);
-    sprite1.draw(ctx);
-    sprite2.draw(ctx);
-    bird.draw(ctx);
+
+    rootNode.draw(ctx);
   }());
 
   
