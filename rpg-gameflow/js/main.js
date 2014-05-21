@@ -8,6 +8,15 @@ function main () {
   //minimize calls to the dom
   var SCREEN_WIDTH = layer2.width;
   var SCREEN_HEIGHT = layer2.height;
+  var gameRunning = false;
+  //buttons are css-styled links
+  var startButton = document.getElementById('start-button');
+  var saveButton = document.getElementById('save-button');
+  var message = document.getElementById('message');
+
+  /*
+   * Set up sprites
+   */
   
   var sprite1 = new Sprite('./assets/character/guy1.png', {
     cols: 4,
@@ -19,8 +28,28 @@ function main () {
     cellOffsetX: 0,
     cellOffsetY: -16
   });
-  sprite1.x = 128;
-  sprite1.y = 384;
+
+  function startSpritePosition (sprite) {
+    // check if sprite's position is stored
+    try {
+      var spriteAttrStr = window.localStorage.getItem('spritePos');
+    } catch (err) {
+      console.log("localStorage not supported.");
+    }
+    if (!spriteAttrStr) {
+      //default position
+      sprite.x = 128;
+      sprite.y = 384;
+    } else {
+      //saved position
+      var spriteAttr = JSON.parse(spriteAttrStr);
+      sprite.x = spriteAttr.x;
+      sprite.y = spriteAttr.y;
+      message.innerHTML = "Loaded saved game."
+    }
+  }
+
+  startSpritePosition(sprite1);
   
   var sprite2 = new Sprite('./assets/character/girl1.png', {
     cols: 4,
@@ -47,130 +76,105 @@ function main () {
   bird.scaleX = bird.scaleY = 0.4;
   bird.play(0);
 
-  //anything in the render list must implement the `.draw(ctx)` method.
+  
+  /*
+   * Set up scene graph
+   */
+  
   var rootNode = new DrawNode();
-
-  
-
-  var titleImage = new CanvasImage('./assets/title-background.png');
-  rootNode.addChild(titleImage);
-  
-  var titleScreen = new DrawNode();
-  titleScreen.addChild(titleImage);
 
   var gameScreen = new DrawNode();
   gameScreen.addChild(sprite1);
   gameScreen.addChild(sprite2);
   gameScreen.addChild(bird);
+  rootNode.addChild(gameScreen);
+
+  var titleImage = new CanvasImage('./assets/title-background.png');
+  var titleScreen = new DrawNode();
+  titleScreen.addChild(titleImage);
+  rootNode.addChild(titleScreen);
+
+  window.rn = rootNode;
+  window.ts = titleScreen;
+  /*
+   * initial draw after title image load, does not start game loop
+   */
+  titleImage._img.addEventListener('load', function () {
+    //drawFrame();
+    rootNode.draw(ctx);
+  });
   
   /* Main animation loop:
    * Re-draw objects on layer2 canvas EACH frame.
    */
-  (function drawFrame () {
-    window.requestAnimationFrame(drawFrame);
-    ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    checkCollision(sprite1);
-    lookAt(sprite2, sprite1);
-    moveBird(bird);
+  function drawFrame () {
+    if (gameRunning) {
+      window.requestAnimationFrame(drawFrame);
+      ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      updateSprite.checkCollision(sprite1);
+      updateSprite.lookAt(sprite2, sprite1);
+      updateSprite.moveBird(bird);
+      rootNode.draw(ctx);
+      checkEndGame(sprite1);
+    }
+  }
 
-    rootNode.draw(ctx);
-  }());
-
+  function checkEndGame (sprite) {
+    if (sprite.x > bird.x &&
+        sprite.x < bird.x + 50 &&
+        sprite.y > bird.y &&
+        sprite.y < bird.y + 50) {
+      gameRunning = false;
+      rootNode.addChild(titleScreen);
+      rootNode.draw(ctx);
+      message.innerHTML = "You caught the bird!";
+      window.removeEventListener('keydown', keyListener.onKeyDown, false);
+      window.removeEventListener('keyup', keyListener.onKeyUp, false);
+      //reset sprites
+      bird.x = -bird.width;
+      bird.y = 160;
+      sprite.play(0);
+      sprite.stop();
+      sprite.vx = sprite.vy = 0;
+      startSpritePosition(sprite);
+    }
+  }
   
-  /* When an arrow key is pressed:
-   * 1. play the sprite's animation sequence associated with that direction, and
-   * 2. apply directional velocity for movement.
-   * Sprite.play(row) animates the sequence of frames at the specified row in a spritesheet.
+  /*
+   * Set up buttons
    */
-  window.addEventListener('keydown', function (event) {
-    switch (event.keyCode) {
-    case 37: //left
-      sprite1.play(1); //spritesheet row
-      sprite1.vx = -2;
-      break;
-    case 38: //up
-      sprite1.play(3);
-      sprite1.vy = -2;
-      break;
-    case 39: //right
-      sprite1.play(2);
-      sprite1.vx = 2;
-      break;
-    case 40: //down
-      sprite1.play(0);
-      sprite1.vy = 2;
-      break;
-    }
-  }, false);
 
-  /* When the arrow key is released, stop animation and movement.
-   */
-  window.addEventListener('keyup', function () {
-    sprite1.stop();
-    sprite1.vx = 0;
-    sprite1.vy = 0;
-  }, false);
+  //the start button removes the title screen,
+  //starts the game loop, and adds keyboard event listeners
+  startButton.addEventListener('click', startGame);
 
-
-  /* Determine the directional movement of a sprite by examining its
-   * vx/vy properties. Use the sprite's bounding-box edges to test
-   * for collision with the edge of the canvas.
-   * If it collides, apply a small amount of reverse velocity to the
-   * sprite to bounce it off the wall.
-   */
-  function checkCollision (sprite) {
-    //test right boundary
-    if (sprite.vx > 0 && (sprite.x + sprite.width) >= SCREEN_WIDTH) {
-      sprite.vx = -1;
-      //test left boundary
-    } else if (sprite.vx < 0 && sprite.x < 0) {
-      sprite.vx = 1;
-    }
-    //test bottom boundary
-    if (sprite.vy > 0 && (sprite.y + sprite.height) >= SCREEN_HEIGHT) {
-      sprite.vy = -1;
-      //test top boundary
-    } else if (sprite.vy < 0 && sprite.y < 0) {
-      sprite.vy = 1;
+  function startGame () {
+    if (!gameRunning) {
+      //remove title screen
+      rootNode.removeChild(titleScreen);
+      //set dimensions for collision detection
+      updateSprite.setCanvasDimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
+      //add event listeners for key press, dispatch to sprite1
+      keyListener.setActiveSprite(sprite1);
+      window.addEventListener('keydown', keyListener.onKeyDown, false);
+      window.addEventListener('keyup', keyListener.onKeyUp, false);
+      //start the game loop
+      gameRunning = true;
+      drawFrame();
     }
   }
 
-  /* Gives the appearance that spriteA is looking at spriteB.
-   * If spriteB is moving past spriteA's x or y position, play a single
-   * frame on spriteA's spritesheet to switch the animation sequence.
-   */
-  function lookAt (spriteA, spriteB) {
-    if (spriteB.vy > 0 && spriteB.y >= spriteA.y) {
-      spriteA.play(0); //down animation
-      spriteA.stop();
-    } else if (spriteB.vy < 0 && spriteB.y < spriteA.y) {
-      spriteA.play(3); //up animation
-      spriteA.stop();
+  //the save button stores the sprite's position on the client
+  saveButton.addEventListener('click', function () {
+    try {
+      var attrStr = JSON.stringify({
+        x: sprite1.x,
+        y: sprite1.y
+      });
+      window.localStorage.setItem('spritePos', attrStr);
+      message.innerHTML = "Game saved!"
+    } catch (err) {
+      message.innerHTML = "Unable to save game."
     }
-    if (spriteB.vx > 0 && spriteB.x >= spriteA.x) {
-      spriteA.play(2); //right animation
-      spriteA.stop();
-    } else if (spriteB.vx < 0 && spriteB.x < spriteA.x) {
-      spriteA.play(1); //left animation
-      spriteA.stop();
-    }
-  }
-
-  /* This function is called every frame and simply moves the
-   * sprite horizontally across the entire length of the canvas.
-   * When the sprite reaches the end, wrap it around to the
-   * beginning, starting at a random y position.
-   */
-  function moveBird (sprite) {
-    //check for screen wrap
-    if (sprite.x > SCREEN_WIDTH) {
-      sprite.x = -sprite.width;
-      //start at random height on canvas within two edge tiles
-      var tileHeight = 32;
-      var min = (tileHeight * 2);
-      var max = SCREEN_HEIGHT - (tileHeight * 2);
-      sprite.y = Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-    sprite.x += 2;
-  }
+  });
 }

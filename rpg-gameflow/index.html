@@ -20,6 +20,51 @@
     #container img#layer1    { z-index: 1; }
     #container canvas#layer2 { z-index: 2; }
     #container img#layer3    { z-index: 3; }
+
+    #message {
+      font-size: 20px;
+      height: 20px;
+    }
+    
+    .game-button {
+      -moz-box-shadow: inset 0px 1px 0px 0px #dcecfb;
+      -webkit-box-shadow: inset 0px 1px 0px 0px #dcecfb;
+      box-shadow: inset 0px 1px 0px 0px #dcecfb;
+      background-color: #bddbfa;
+      -webkit-border-top-left-radius: 0px;
+      -moz-border-radius-topleft: 0px;
+      border-top-left-radius: 0px;
+      -webkit-border-top-right-radius: 0px;
+      -moz-border-radius-topright: 0px;
+      border-top-right-radius: 0px;
+      -webkit-border-bottom-right-radius: 0px;
+      -moz-border-radius-bottomright: 0px;
+      border-bottom-right-radius: 0px;
+      -webkit-border-bottom-left-radius: 0px;
+      -moz-border-radius-bottomleft: 0px;
+      border-bottom-left-radius: 0px;
+      text-indent: 0;
+      border: 1px solid #84bbf3;
+      display: inline-block;
+      color: #ffffff;
+      font-family: Verdana;
+      font-size: 15px;
+      font-weight: bold;
+      font-style: normal;
+      height: 40px;
+      line-height: 40px;
+      width: 100px;
+      text-decoration: none;
+      text-align: center;
+      text-shadow: 1px 1px 0px #528ecc;
+    }
+    .game-button:hover {
+      background-color:#80b5ea;
+    }
+    .game-button:active {
+      position:relative;
+      top:1px;
+    }
     </style>
   </head>
   <body>
@@ -29,12 +74,17 @@
       <canvas id="layer2" width="512" height="512"></canvas>
       <img id="layer3" width="512" height="512" src="./assets/clouds.png">
     </div>
+    <a id="start-button" href="#" class="game-button">Start</a>
+    <a id="save-button" href="#" class="game-button">Save</a>
+    <h1 id="message"></h1>
     <footer>
       Press arrow keys to move.<br/>
       Game art courtesy of <a href="http://untamed.wild-refuge.net/rpgxp.php">Sithjester</a>.
     </footer>
     
     <script src="./js/utils.js"></script>
+    <script src="./js/key-dispatch.js"></script>
+    <script src="./js/update-sprite.js"></script>
     <script src="./js/CanvasImage.js"></script>
     <script src="./js/Sprite.js"></script>
     <script src="./js/DrawNode.js"></script>
