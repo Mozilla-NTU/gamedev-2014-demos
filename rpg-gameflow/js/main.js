@@ -49,7 +49,7 @@ function main () {
     }
   }
 
-  startSpritePosition(sprite1);
+  startSpritePosition(sprite1); //will use to reset
   
   var sprite2 = new Sprite('./assets/character/girl1.png', {
     cols: 4,
@@ -94,8 +94,6 @@ function main () {
   titleScreen.addChild(titleImage);
   rootNode.addChild(titleScreen);
 
-  window.rn = rootNode;
-  window.ts = titleScreen;
   /*
    * initial draw after title image load, does not start game loop
    */
@@ -120,10 +118,11 @@ function main () {
   }
 
   function checkEndGame (sprite) {
+    var BOX_SIZE = 50; //size to catch
     if (sprite.x > bird.x &&
-        sprite.x < bird.x + 50 &&
+        sprite.x < bird.x + BOX_SIZE &&
         sprite.y > bird.y &&
-        sprite.y < bird.y + 50) {
+        sprite.y < bird.y + BOX_SIZE) {
       gameRunning = false;
       rootNode.addChild(titleScreen);
       rootNode.draw(ctx);
