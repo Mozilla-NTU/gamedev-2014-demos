@@ -1,3 +1,7 @@
+/*
+ * Contains functions for moving sprites.
+ */
+
 var updateSprite = {
   screenWidth: 0,
   screenHeight: 0

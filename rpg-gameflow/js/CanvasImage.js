@@ -1,3 +1,6 @@
+/**
+ * Wraps an Image Element for loading and drawing to the canvas.
+ */
 function CanvasImage (url) {
   this.x = 0;
   this.y = 0;

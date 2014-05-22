@@ -1,7 +1,13 @@
+/*
+ * Move key events listeners out of the main file.
+ */
+
 var keyListener = {
   sprite: null
 };
 
+/* Sprite to apply added velocity to.
+ */
 keyListener.setActiveSprite = function (sprite) {
   keyListener.sprite = sprite;
 };
