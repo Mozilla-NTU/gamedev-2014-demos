@@ -5,9 +5,9 @@ function main () {
   //get canvas element and its rendering context
   var layer2 = document.getElementById('layer2');
   var ctx = layer2.getContext('2d');
-  //minimize calls to the dom
   var SCREEN_WIDTH = layer2.width;
   var SCREEN_HEIGHT = layer2.height;
+  
   var gameRunning = false;
   //buttons are css-styled links
   var startButton = document.getElementById('start-button');
@@ -15,7 +15,31 @@ function main () {
   var message = document.getElementById('message');
 
   /*
-   * Set up sprites
+   * Check for stored position in localStorage, otherwise
+   * sprite position from given x and y params.
+   */
+  function setPositionOrDefault (sprite, x, y) {
+    // check if sprite's position is stored
+    try {
+      var spriteAttrStr = window.localStorage.getItem('spritePos');
+    } catch (err) {
+      console.log("localStorage not supported.");
+    }
+    if (!spriteAttrStr) {
+      //default start position
+      sprite.x = x;
+      sprite.y = y;
+    } else {
+      //got saved position
+      var spriteAttr = JSON.parse(spriteAttrStr);
+      sprite.x = spriteAttr.x;
+      sprite.y = spriteAttr.y;
+      message.innerHTML = "Loaded saved game."
+    }
+  }
+
+  /*
+   * SPRITES
    */
   
   var sprite1 = new Sprite('./assets/character/guy1.png', {
@@ -28,29 +52,11 @@ function main () {
     cellOffsetX: 0,
     cellOffsetY: -16
   });
+  //
+  var sprite1DefaultX = 128;
+  var sprite1DefaultY = 384;
+  setPositionOrDefault(sprite1, sprite1DefaultX, sprite1DefaultY);
 
-  function startSpritePosition (sprite) {
-    // check if sprite's position is stored
-    try {
-      var spriteAttrStr = window.localStorage.getItem('spritePos');
-    } catch (err) {
-      console.log("localStorage not supported.");
-    }
-    if (!spriteAttrStr) {
-      //default position
-      sprite.x = 128;
-      sprite.y = 384;
-    } else {
-      //saved position
-      var spriteAttr = JSON.parse(spriteAttrStr);
-      sprite.x = spriteAttr.x;
-      sprite.y = spriteAttr.y;
-      message.innerHTML = "Loaded saved game."
-    }
-  }
-
-  startSpritePosition(sprite1); //will use to reset
-  
   var sprite2 = new Sprite('./assets/character/girl1.png', {
     cols: 4,
     rows: 4,
@@ -70,7 +76,7 @@ function main () {
     width: 183,
     height: 168
   });
-  //start off screen
+  //start off screen left
   bird.x = -bird.width;
   bird.y = 160;
   bird.scaleX = bird.scaleY = 0.4;
@@ -78,7 +84,7 @@ function main () {
 
   
   /*
-   * Set up scene graph
+   * SCENE GRAPH
    */
   
   var rootNode = new DrawNode();
@@ -95,14 +101,17 @@ function main () {
   rootNode.addChild(titleScreen);
 
   /*
-   * initial draw after title image load, does not start game loop
+   * LOAD ASSETS
+   * After images are all loaded, render frame once to have something
+   * on-screen. This is kinda hacky, you should manage this better.
+   * Does *not* start game loop.
    */
   titleImage._img.addEventListener('load', function () {
-    //drawFrame();
     rootNode.draw(ctx);
   });
   
-  /* Main animation loop:
+  /*
+   * GAME LOOP
    * Re-draw objects on layer2 canvas EACH frame.
    */
   function drawFrame () {
@@ -117,6 +126,9 @@ function main () {
     }
   }
 
+  /*
+   * TEST END GAME
+   */
   function checkEndGame (sprite) {
     var BOX_SIZE = 50; //size to catch
     if (sprite.x > bird.x &&
@@ -126,7 +138,6 @@ function main () {
       gameRunning = false;
       rootNode.addChild(titleScreen);
       rootNode.draw(ctx);
-      message.innerHTML = "You caught the bird!";
       window.removeEventListener('keydown', keyListener.onKeyDown, false);
       window.removeEventListener('keyup', keyListener.onKeyUp, false);
       //reset sprites
@@ -135,12 +146,13 @@ function main () {
       sprite.play(0);
       sprite.stop();
       sprite.vx = sprite.vy = 0;
-      startSpritePosition(sprite);
+      setPositionOrDefault(sprite, sprite1DefaultX, sprite1DefaultY);
+      message.innerHTML = "You caught the bird!";
     }
   }
   
   /*
-   * Set up buttons
+   * BUTTONS
    */
 
   //the start button removes the title screen,

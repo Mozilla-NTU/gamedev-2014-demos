@@ -1,5 +1,6 @@
 /**
- * Contains a list of child elements that implement the `.draw(ctx)` method.
+ * Contains an array of children that implement the `.draw(ctx)` method.
+ * When draw is called, iterate through chidren and call their draw.
  */
 function DrawNode () {
   this.children = [];
